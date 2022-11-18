@@ -1,11 +1,10 @@
 import React, { Component, Fragment } from "react";
-import { Route, Router, Redirect } from "react-router-dom";
+import { Route, withRouter, Switch } from "react-router-dom";
 import { connect } from "react-redux";
 import { CartService } from "./services";
-import { ConfigService } from "./services";
 import Meeting from './pages/home/components/videoCall/Meeting';
 
-import { Header, Footer ,Appbar } from "./shared";
+import { Header, Footer, Appbar } from "./shared";
 import {
   Home,
   List,
@@ -14,23 +13,16 @@ import {
   SuggestedProductsList,
   Profile,
   ShoppingCart,
+  Arrivals,
+  RefundPolicy,
+  TermsOfService,
+  AboutUs,
+  ErrorPage
 } from "./pages";
 
 import "./i18n";
 import "./main.scss";
 
-import { createBrowserHistory } from "history";
-import { ai } from "./services/telemetryClient";
-// add appinsights
-const history = createBrowserHistory({ basename: "" });
-(async () => {
-  await ConfigService.loadSettings();
-  if (ConfigService._applicationInsightsIntrumentationKey) {
-    ai.initialize(ConfigService._applicationInsightsIntrumentationKey, {
-      history,
-    });
-  }
-})();
 
 class App extends Component {
   constructor() {
@@ -60,6 +52,12 @@ class App extends Component {
     }
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    if(this.props.location.pathname !== prevProps.location.pathname){
+      window.scrollTo(0, 0);
+    }
+  }
+
   ShoppingCart = (quantity) => {
     this.setState({ quantity });
   };
@@ -80,7 +78,7 @@ class App extends Component {
           this.props.userInfo.loggedIn === true ? (
             <Component {...props} {...rest} />
           ) : (
-            <Redirect to="/" />
+            this.props.history.push('/')
           )
         }
       />
@@ -88,13 +86,17 @@ class App extends Component {
 
     return (
       <div className="App">
-        <Router history={history}>
-          <Fragment>
-            <div className="mainHeader">
-              <Appbar />
+        <Fragment>
+          <div className="mainHeader">
+            <Appbar />
+            {this.props.history.location.pathname === '/' || this.props.history.location.pathname === '/new-arrivals' ?
               <Header quantity={quantity} />
-            </div>
+              :
+              <div id="box"></div>}
+          </div>
+          <Switch>
             <Route exact path="/" component={Home} />
+            <Route exact path="/new-arrivals" component={Arrivals} />
             <Route exact path="/meeting" component={Meeting} />
             <Route exact path="/list" component={List} />
             <Route exact path="/list/:code" component={List} />
@@ -108,6 +110,9 @@ class App extends Component {
                 <Detail sumProductInState={this.sumProductInState} {...props} />
               )}
             />
+            <Route path="/refund-policy" component={RefundPolicy} />
+            <Route path="/terms-of-service" component={TermsOfService} />
+            <Route path="/about-us" component={AboutUs} />
             <PrivateRoute path="/coupons" component={MyCoupons} />
             <PrivateRoute path="/profile" component={Profile} />
             <PrivateRoute
@@ -116,9 +121,10 @@ class App extends Component {
               ShoppingCart={this.ShoppingCart}
               quantity={this.state.quantity}
             />
-            <Footer />
-          </Fragment>
-        </Router>
+            <Route path="*" component={ErrorPage} />
+          </Switch>
+          <Footer />
+        </Fragment>
       </div>
     );
   }
@@ -126,4 +132,4 @@ class App extends Component {
 
 const mapStateToProps = (state) => state.login;
 
-export default connect(mapStateToProps)(App);
+export default withRouter(connect(mapStateToProps)(App));

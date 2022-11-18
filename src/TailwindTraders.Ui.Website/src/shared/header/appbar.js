@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { withRouter, Link, useHistory } from 'react-router-dom';
 import { alpha, makeStyles } from '@material-ui/core/styles';
 import {AppBar, InputAdornment, TextField} from '@material-ui/core';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -11,11 +11,11 @@ import AccountCircle from '@material-ui/icons/AccountCircle';
 import MailIcon from '@material-ui/icons/Mail';
 import NotificationsIcon from '@material-ui/icons/Notifications';
 import MoreIcon from '@material-ui/icons/MoreVert';
-import { ReactComponent as Logo } from '../../assets/images/logo-horizontal.svg';
+import Logo from '../../assets/images/logo-horizontal.svg';
 import SearchIconNew from '../../assets/images/original/Contoso_Assets/Icons/image_search_icon.svg'
-import WishlistIcon from '../../assets/images/original/Contoso_Assets/Icons/wishlist_icon.svg'
-import ProfileIcon from '../../assets/images/original/Contoso_Assets/Icons/profile_icon.svg'
-import BagIcon from '../../assets/images/original/Contoso_Assets/Icons/cart_icon.svg'
+// import WishlistIcon from '../../assets/images/original/Contoso_Assets/Icons/wishlist_icon.svg'
+// import ProfileIcon from '../../assets/images/original/Contoso_Assets/Icons/profile_icon.svg'
+// import BagIcon from '../../assets/images/original/Contoso_Assets/Icons/cart_icon.svg'
 import UploadFile from '../uploadFile/uploadFile';
 const useStyles = makeStyles((theme) => ({
   grow: {
@@ -41,10 +41,10 @@ const useStyles = makeStyles((theme) => ({
       backgroundColor: alpha(theme.palette.common.white, 0.25),
     },
     marginRight: theme.spacing(2),
-    marginLeft: 67,
+    marginLeft: 50,
     width: '100%',
     [theme.breakpoints.up('sm')]: {
-      marginLeft: 67,
+      marginLeft: 50,
       width: '50%',
       maxWidth: '650px',
       maxHeight: '48px'
@@ -86,14 +86,29 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function PrimarySearchAppBar() {
+function TopAppBar() {
   const classes = useStyles();
+  const history = useHistory();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = React.useState(null);
   const [searchUpload, setSearchUpload] = React.useState(false)
 
   const isMenuOpen = Boolean(anchorEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
+
+  React.useEffect(() => {
+    if(searchUpload === true){
+      window.addEventListener('click', function(e){   
+        if (!document.getElementById('searchbox').contains(e.target)){
+          setSearchUpload(false)
+        }
+      });
+    }
+  }, [searchUpload]);
+
+  React.useEffect(() => {
+    setSearchUpload(false)
+  }, [history.location.pathname]);
 
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -173,10 +188,12 @@ export default function PrimarySearchAppBar() {
     <div className={classes.grow}>
       <AppBar color='inherit' className='appbar box-shadow-0' position="static">
         <Toolbar className='p-0'>
+          <div className='headerLogo'>
             <Link to="/">
-                <Logo />
+                <img src={Logo} alt=""/>
             </Link>
-          <div className={`${classes.search} searchBar`}>
+          </div>
+          <div className={`${classes.search} searchBar`} id="searchbox">
             <TextField
                 // label="Search by product name or search by image"
                 placeholder='Search by product name or search by image'
@@ -204,9 +221,8 @@ export default function PrimarySearchAppBar() {
           </div>
           <div className={classes.grow} />
           <div className={classes.sectionDesktop}>
-            <IconButton className='iconButton' aria-label="show 4 new mails" color="inherit">
+            {/* <IconButton className='iconButton' aria-label="show 4 new mails" color="inherit">
               <Badge badgeContent={4} color="secondary">
-                {/* <MailIcon /> */}
                 <img src={WishlistIcon} alt="iconimage"/>
               </Badge>
             </IconButton>
@@ -219,15 +235,13 @@ export default function PrimarySearchAppBar() {
               onClick={handleProfileMenuOpen}
               color="inherit"
             >
-              {/* <AccountCircle /> */}
               <img src={ProfileIcon} alt="iconimage"/>
             </IconButton>
             <IconButton className='iconButton' aria-label="show 17 new notifications" color="inherit">
               <Badge badgeContent={17} color="secondary">
-                {/* <NotificationsIcon /> */}
                 <img src={BagIcon} alt="iconimage"/>
               </Badge>
-            </IconButton>
+            </IconButton> */}
           </div>
           <div className={classes.sectionMobile}>
             <IconButton
@@ -247,3 +261,4 @@ export default function PrimarySearchAppBar() {
     </div>
   );
 }
+export default withRouter(TopAppBar);

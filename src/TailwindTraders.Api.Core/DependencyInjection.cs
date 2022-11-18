@@ -85,8 +85,8 @@ public class DependencyInjection : FunctionsStartup
             .AddScoped<IProductService, ProductService>()
             .AddScoped<IStockService, StockService>()
             .AddScoped<IProfileService, ProfileService>()
-            .AddScoped<IImageSearchService, ImageSearchService>()
-            .AddScoped<IImageSearchTermPredictor, OnnxImageSearchTermPredictor>();
+            .AddScoped<IImageAnalysisService, ImageAnalysisService>()
+            .AddScoped<IImageSearchService, ImageSearchService>();
 
         // inject repositories
         services
@@ -100,6 +100,9 @@ public class DependencyInjection : FunctionsStartup
         services.AddControllers();
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
+
+        var appInsightsConnectionString = configuration[KeyVaultConstants.SecretNameAppInsightsConnectionString];
+        services.AddApplicationInsightsTelemetry(options => options.ConnectionString = appInsightsConnectionString);
 
         // @TODO: Temporary. Fix later.
         services.AddCors(options =>
